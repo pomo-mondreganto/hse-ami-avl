@@ -2,6 +2,7 @@
 #define AVL_H_
 
 #include <cstddef>
+#include <utility>
 #include <algorithm>
 #include <initializer_list>
 
@@ -17,7 +18,7 @@ class Set {
         size_t size;
 
         explicit Node(ValueType key):
-        key(key),
+        key(std::move(key)),
         L(nullptr),
         R(nullptr),
         P(nullptr),
@@ -25,11 +26,11 @@ class Set {
         size(1) {}
     } *root;
 
-    static size_t get_height(Node *N) {
+    static size_t get_height(const Node *N) {
         return (N ? N->height : 0);
     }
 
-    static size_t get_size(Node *N) {
+    static size_t get_size(const Node *N) {
         return (N ? N->size : 0);
     }
 
@@ -82,7 +83,7 @@ class Set {
         return C;
     }
 
-    static int get_balance(Node *N) {
+    static int get_balance(const Node *N) {
         int left_height = static_cast<int>(get_height(N->L));
         int right_height = static_cast<int>(get_height(N->R));
         return left_height - right_height;
@@ -320,9 +321,13 @@ class Set {
 
     template<typename Iter>
     Set(Iter start, Iter end): root(nullptr) {
-        while (start != end) {
-            root = _insert(root, *start);
-            ++start;
+        try {
+            while (start != end) {
+                root = _insert(root, *start);
+                ++start;
+            }
+        } catch (...) {
+            destroy(root);
         }
     }
 
